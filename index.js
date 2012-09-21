@@ -4,7 +4,7 @@ var async = require('async');
 var config = require('./config.js');
 
 
-var dictPath = path.resolve(config.dict);
+var dictPath = path.resolve(__dirname, config.dict);
 var bufferSize = 256;
 
 module.exports = function(fn) {
@@ -15,8 +15,9 @@ module.exports = function(fn) {
           callback(err);
         } else if (!stats.isFile()) {
           callback(new Error('Specified dictionary `' + config.dict + '` is not a file!'));
+        } else {
+          callback(null, stats.size);
         }
-        callback(null, stats.size);
       });
     },
     open_file: function(callback) {
