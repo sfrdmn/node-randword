@@ -1,17 +1,16 @@
 {
   "name": "randword",
   "version": "0.0.1",
-  "description": "Produces random English words.",
+  "description": "Returns random English words.",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "dependencies": [
+    "async": ">=0.1.0"
+  ],
   "repository": "",
   "keywords": [
     "dictionary",
     "random",
-    "random",
-    "word",
+    "random word",
     "dict"
   ],
   "author": "Sean Fridman",
