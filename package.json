@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "description": "Returns random English words.",
   "main": "index.js",
-  "dependencies": [
+  "dependencies": {
     "async": ">=0.1.0"
-  ],
-  "repository": "",
+  },
+  "repository": "https://github.com/sfrdmn/node-randword",
   "keywords": [
     "dictionary",
     "random",
