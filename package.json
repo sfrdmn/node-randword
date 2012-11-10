@@ -1,6 +1,6 @@
 {
   "name": "randword",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Returns random English words.",
   "main": "index.js",
   "dependencies": {
