@@ -10,6 +10,9 @@
     "random word",
     "dict"
   ],
+  "scripts": {
+    "test": "make test"
+  },
   "author": "Sean Fridman",
   "license": "BSD",
   "devDependencies": {
