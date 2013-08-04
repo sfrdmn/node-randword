@@ -8,3 +8,9 @@ randword(function(err, word) {
   console.log(word + '!');
 });
 ```
+
+Or you can stream it!
+
+```Javascript
+  randword().pipe(process.stdout)
+```
