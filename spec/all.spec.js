@@ -1,7 +1,6 @@
 var should = require('should')
 var randword = require('../index.js')
-var es = require('event-stream')
-var through = es.through
+var through = require('through')
 
 describe('randword', function() {
 
