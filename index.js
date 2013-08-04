@@ -1,65 +1,66 @@
-var fs = require('fs');
-var path = require('path');
-var async = require('async');
-var config = require('./config.js');
+var fs = require('graceful-fs')
+var path = require('path')
+var through = require('through')
+var split = require('split')
+var bun = require('bun')
+var config = require('./config.json')
 
+var dictPath = path.resolve(__dirname, config.dict)
+var bufferSize = config.bufferSize
 
-var dictPath = path.resolve(__dirname, config.dict);
-var bufferSize = 256;
-
-module.exports = function(fn) {
-  async.auto({
-    get_stats: function(callback) {
-      fs.stat(dictPath, function(err, stats) {
-        if (err) {
-          callback(err);
-        } else if (!stats.isFile()) {
-          callback(new Error('Specified dictionary `' + config.dict + '` is not a file!'));
-        } else {
-          callback(null, stats.size);
-        }
-      });
-    },
-    open_file: function(callback) {
-      fs.open(dictPath, 'r', function(err, fd) {
-        callback(err, fd);
-      });
-    },
-    read_buffer_to_string: ['get_stats', 'open_file', function(callback, results) {
-      var size = results['get_stats'];
-      var fd = results['open_file'];
-      var bufferPos = getRandomBufferPos(size);
-      var buffer = new Buffer(bufferSize);
-      fs.read(fd, buffer, 0, bufferSize, bufferPos, function(err, bytesRead, buffer) {
-        var bufferString = buffer.toString(config.encoding, 0, bufferSize);
-        callback(err, bufferString);
-      });
-    }],
-    get_single_word: ['read_buffer_to_string', function(callback, results) {
-      var bufferString = results['read_buffer_to_string'];
-      var wordArray = bufferString.split(config.delimiter);
-      // Trim off the first and last words, since we might have only buffered part of them.
-      var word = wordArray[getRandomInt(1, wordArray.length - 2)];
-      callback(null, word);
-    }]
-  }, function(err, results) {
-    if (err) {
-      fn(err);
-    } else {
-      fn(null, results['get_single_word']);
-    }
-  });
-
+// read dictionary with stream
+function textStream() {
+  var start = randomInt(0, config.size - bufferSize)
+  return fs.createReadStream(dictPath, {
+    encoding: config.encoding,
+    start: start,
+    end: start + bufferSize
+  })
 }
 
-function getRandomBufferPos(fileSize) {
-  var pos = getRandomInt(0, fileSize);
-  if (pos + bufferSize > fileSize) {
-    pos = fileSize - bufferSize;
-  }
-  return pos;
-};
+// split text stream into words
+function splitStream() {
+  return split(config.delimiter)
+}
 
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+// add all words to list, ditch first and last words in case they were
+// sliced by start and end read positions
+function concatStream() {
+  var wordlist = []
+  return through(function(word) {
+    wordlist.push(word)
+  }, function() {
+    this.push(wordlist)
+  })
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+module.exports = function(callback) {
+  callback = typeof callback === 'function' ? callback : function() {}
+
+  return bun([
+    textStream(),
+    splitStream(),
+    concatStream(),
+    through(function(wordlist) {
+      var word = ''
+      if (wordlist.length < 3) {
+        this.emit('error', new Error(
+            'Unable to get random word. Buffer size too small? Delimiter set incorrectly?'))
+      } else {
+        wordlist = wordlist.slice(1, wordlist.length - 2)
+        word = wordlist[randomInt(0, wordlist.length - 1)]
+        callback(null, word)
+        this.push(word)
+      }
+      this.emit('end')
+    })
+  ]).on('error', onError)
+
+  function onError(err) {
+    callback(err)
+  }
 }

@@ -1,0 +1,7 @@
+{
+  "dict": "dictionaries/wordlist.txt",
+  "encoding": "ascii",
+  "size": 1154335,
+  "bufferSize": 256,
+  "delimiter": "\r\n"
+}
