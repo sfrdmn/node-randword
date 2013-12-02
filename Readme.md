@@ -16,3 +16,11 @@ Or you can stream it!
 ```Javascript
   randword().pipe(process.stdout)
 ```
+
+## Note
+
+This module uses a text file dictionary as its word base. It's a little over a meg in size.
+So you'll have that sitting in your `node_modules`. One positive side effect of this is that the module
+(theoretically) works on Windows.
+
+The text file is from the depths of the Internet somewhere. Not sure about the nature of its copyright.
